@@ -1,0 +1,1 @@
+rm -rf ./dist && rm -rf ./build && rm -rf ./*.egg-info && python setup.py bdist_wheel && twine upload dist/* && rm -rf ./dist && rm -rf ./build && rm -rf ./*.egg-info
