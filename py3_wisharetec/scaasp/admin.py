@@ -10,7 +10,8 @@ Github：https://github.com/guolei19850528/py3_wisharetec
 """
 import hashlib
 import json
-from datetime import timedelta
+import pathlib
+from datetime import timedelta, datetime
 from typing import Union
 
 import diskcache
@@ -19,6 +20,53 @@ import requests
 from addict import Dict
 from jsonschema.validators import Draft202012Validator
 from requests import Response
+from retrying import retry
+
+
+class UrlSettings:
+    LOGIN: str = "/manage/login"
+    QUERY_LOGIN_STATE: str = "/old/serverUserAction!checkSession.action"
+    QUERY_COMMUNITY_WITH_PAGINATOR: str = "/manage/communityInfo/getAdminCommunityList"
+    QUERY_COMMUNITY_DETAIL: str = "/manage/communityInfo/getCommunityInfo"
+    QUERY_ROOM_WITH_PAGINATOR: str = "/manage/communityRoom/listCommunityRoom"
+    QUERY_ROOM_DETAIL: str = "/manage/communityRoom/getFullRoomInfo"
+    QUERY_ROOM_EXPORT: str = "/manage/communityRoom/exportDelayCommunityRoomList"
+    QUERY_REGISTER_USER_WITH_PAGINATOR: str = "/manage/user/register/list"
+    QUERY_REGISTER_USER_DETAIL: str = "/manage/user/register/detail"
+    QUERY_REGISTER_USER_EXPORT: str = "/manage/user/register/list/export"
+    QUERY_REGISTER_OWNER_WITH_PAGINATOR: str = "/manage/user/information/register/list"
+    QUERY_REGISTER_OWNER_DETAIL: str = "/manage/user/information/register/detail"
+    QUERY_REGISTER_OWNER_EXPORT: str = "/manage/user/information/register/list/export"
+    QUERY_UNREGISTER_OWNER_WITH_PAGINATOR: str = "/manage/user/information/unregister/list"
+    QUERY_UNREGISTER_OWNER_DETAIL: str = "/manage/user/information/unregister/detail"
+    QUERY_UNREGISTER_OWNER_EXPORT: str = "/manage/user/information/unregister/list/export"
+    QUERY_SHOP_GOODS_CATEGORY_WITH_PAGINATOR: str = "/manage/productCategory/getProductCategoryList"
+    QUERY_SHOP_GOODS_WITH_PAGINATOR: str = "/manage/shopGoods/getAdminShopGoods"
+    QUERY_SHOP_GOODS_DETAIL: str = "/manage/shopGoods/getShopGoodsDetail"
+    SAVE_SHOP_GOODS: str = "/manage/shopGoods/saveSysShopGoods"
+    UPDATE_SHOP_GOODS: str = "/manage/shopGoods/updateShopGoods"
+    QUERY_SHOP_GOODS_PUSH_TO_STORE: str = "/manage/shopGoods/getGoodsStoreEdits"
+    SAVE_SHOP_GOODS_PUSH_TO_STORE: str = "/manage/shopGoods/saveGoodsStoreEdits"
+    QUERY_STORE_PRODUCT_WITH_PAGINATOR: str = "/manage/storeProduct/getAdminStoreProductList"
+    QUERY_STORE_PRODUCT_DETAIL: str = "/manage/storeProduct/getStoreProductInfo"
+    UPDATE_STORE_PRODUCT: str = "/manage/storeProduct/updateStoreProductInfo"
+    UPDATE_STORE_PRODUCT_STATUS: str = "/manage/storeProduct/updateProductStatus"
+    QUERY_BUSINESS_ORDER_WITH_PAGINATOR: str = "/manage/businessOrderShu/list"
+    QUERY_BUSINESS_ORDER_DETAIL: str = "/manage/businessOrderShu/view"
+    QUERY_BUSINESS_ORDER_EXPORT_1: str = "/manage/businessOrder/exportToExcelByOrder"
+    QUERY_BUSINESS_ORDER_EXPORT_2: str = "/manage/businessOrder/exportToExcelByProduct"
+    QUERY_BUSINESS_ORDER_EXPORT_3: str = "/manage/businessOrder/exportToExcelByOrderAndProduct"
+    QUERY_WORK_ORDER_WITH_PAGINATOR: str = "/old/orderAction!viewList.action"
+    QUERY_WORK_ORDER_DETAIL: str = "/old/orderAction!view.action"
+    QUERY_WORK_ORDER_EXPORT: str = "/manage/order/work/export"
+    QUERY_PARKING_AUTH_WITH_PAGINATOR: str = "/manage/carParkApplication/carParkCard/list"
+    QUERY_PARKING_AUTH_DETAIL: str = "/manage/carParkApplication/carParkCard"
+    UPDATE_PARKING_AUTH: str = "/manage/carParkApplication/carParkCard"
+    QUERY_PARKING_AUTH_AUDIT_WITH_PAGINATOR: str = "/manage/carParkApplication/carParkCard/parkingCardManagerByAudit"
+    QUERY_PARKING_AUTH_AUDIT_CHECK_WITH_PAGINATOR: str = "/manage/carParkApplication/getParkingCheckList"
+    UPDATE_PARKING_AUTH_AUDIT_STATUS: str = "/manage/carParkApplication/completeTask"
+    QUERY_EXPORT_WITH_PAGINATOR: str = "/manage/export/log"
+    UPLOAD: str = "/upload"
 
 
 class Admin(object):
@@ -61,14 +109,14 @@ class Admin(object):
                 return json_addict.data, response
         return False, response
 
-    def check_login(
+    def query_login_state(
             self,
             method: str = "GET",
-            url: str = "/old/serverUserAction!checkSession.action",
+            url: str = UrlSettings.QUERY_LOGIN_STATE,
             **kwargs
     ):
         method = method if isinstance(method, str) else "GET"
-        url = url if isinstance(url, str) else "/old/serverUserAction!checkSession.action"
+        url = url if isinstance(url, str) else UrlSettings.QUERY_LOGIN_STATE
         if not url.startswith("http"):
             if not url.startswith("/"):
                 url = f"/{url}"
@@ -86,24 +134,24 @@ class Admin(object):
             self,
             expire: Union[float, int, timedelta] = None,
             login_kwargs: dict = None,
-            check_login_kwargs: dict = None
+            query_login_state_kwargs: dict = None
     ):
         """
         login with cache
         :param expire: expire time default 7100 seconds
         :param login_kwargs: self.login kwargs
-        :param check_login_kwargs: self.check_login kwargs
+        :param query_login_state_kwargs: self.query_login_state kwargs
         :return:
         """
         login_kwargs = login_kwargs if isinstance(login_kwargs, dict) else {}
-        check_login_kwargs = check_login_kwargs if isinstance(check_login_kwargs, dict) else {}
+        query_login_state_kwargs = query_login_state_kwargs if isinstance(query_login_state_kwargs, dict) else {}
         cache_key = f"py3_wisharetec_token_{self.username}"
         if isinstance(self.cache, diskcache.Cache):
             self.token = self.cache.get(cache_key)
         if isinstance(self.cache, (redis.Redis, redis.StrictRedis)):
             self.token = json.loads(self.cache.get(cache_key))
         self.token = self.token if isinstance(self.token, dict) else {}
-        state, _ = self.check_login(**check_login_kwargs)
+        state, _ = self.query_login_state(**query_login_state_kwargs)
         if not state:
             self.login(**login_kwargs)
             if isinstance(self.token, dict) and len(self.token.keys()):
@@ -125,11 +173,11 @@ class Admin(object):
     def login(
             self,
             method: str = "POST",
-            url: str = "/manage/login",
+            url: str = UrlSettings.LOGIN,
             **kwargs
     ):
         method = method if isinstance(method, str) else "POST"
-        url = url if isinstance(url, str) else "/manage/login"
+        url = url if isinstance(url, str) else UrlSettings.LOGIN
         if not url.startswith("http"):
             if not url.startswith("/"):
                 url = f"/{url}"
@@ -176,12 +224,3 @@ class Admin(object):
         kwargs["headers"] = headers
         response = requests.request(method, url, **kwargs)
         return self._default_response_handler(response)
-
-    def download_export(
-            self,
-            export_id: Union[int, str] = None,
-            save_path: str = None,
-            query_export_with_paginator_kwargs: dict = None,
-            retry_kwargs: dict = None,
-    ):
-        pass
