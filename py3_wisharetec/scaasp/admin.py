@@ -15,6 +15,7 @@ from datetime import timedelta, datetime
 from typing import Union
 
 import diskcache
+import py3_requests
 import redis
 import requests
 from addict import Dict
@@ -23,118 +24,132 @@ from requests import Response
 from retrying import retry
 
 
-class UrlSettings:
-    LOGIN: str = "/manage/login"
-    QUERY_LOGIN_STATE: str = "/old/serverUserAction!checkSession.action"
-    QUERY_COMMUNITY_WITH_PAGINATOR: str = "/manage/communityInfo/getAdminCommunityList"
-    QUERY_COMMUNITY_DETAIL: str = "/manage/communityInfo/getCommunityInfo"
-    QUERY_ROOM_WITH_PAGINATOR: str = "/manage/communityRoom/listCommunityRoom"
-    QUERY_ROOM_DETAIL: str = "/manage/communityRoom/getFullRoomInfo"
-    QUERY_ROOM_EXPORT: str = "/manage/communityRoom/exportDelayCommunityRoomList"
-    QUERY_REGISTER_USER_WITH_PAGINATOR: str = "/manage/user/register/list"
-    QUERY_REGISTER_USER_DETAIL: str = "/manage/user/register/detail"
-    QUERY_REGISTER_USER_EXPORT: str = "/manage/user/register/list/export"
-    QUERY_REGISTER_OWNER_WITH_PAGINATOR: str = "/manage/user/information/register/list"
-    QUERY_REGISTER_OWNER_DETAIL: str = "/manage/user/information/register/detail"
-    QUERY_REGISTER_OWNER_EXPORT: str = "/manage/user/information/register/list/export"
-    QUERY_UNREGISTER_OWNER_WITH_PAGINATOR: str = "/manage/user/information/unregister/list"
-    QUERY_UNREGISTER_OWNER_DETAIL: str = "/manage/user/information/unregister/detail"
-    QUERY_UNREGISTER_OWNER_EXPORT: str = "/manage/user/information/unregister/list/export"
-    QUERY_SHOP_GOODS_CATEGORY_WITH_PAGINATOR: str = "/manage/productCategory/getProductCategoryList"
-    QUERY_SHOP_GOODS_WITH_PAGINATOR: str = "/manage/shopGoods/getAdminShopGoods"
-    QUERY_SHOP_GOODS_DETAIL: str = "/manage/shopGoods/getShopGoodsDetail"
-    SAVE_SHOP_GOODS: str = "/manage/shopGoods/saveSysShopGoods"
-    UPDATE_SHOP_GOODS: str = "/manage/shopGoods/updateShopGoods"
-    QUERY_SHOP_GOODS_PUSH_TO_STORE: str = "/manage/shopGoods/getGoodsStoreEdits"
-    SAVE_SHOP_GOODS_PUSH_TO_STORE: str = "/manage/shopGoods/saveGoodsStoreEdits"
-    QUERY_STORE_PRODUCT_WITH_PAGINATOR: str = "/manage/storeProduct/getAdminStoreProductList"
-    QUERY_STORE_PRODUCT_DETAIL: str = "/manage/storeProduct/getStoreProductInfo"
-    UPDATE_STORE_PRODUCT: str = "/manage/storeProduct/updateStoreProductInfo"
-    UPDATE_STORE_PRODUCT_STATUS: str = "/manage/storeProduct/updateProductStatus"
-    QUERY_BUSINESS_ORDER_WITH_PAGINATOR: str = "/manage/businessOrderShu/list"
-    QUERY_BUSINESS_ORDER_DETAIL: str = "/manage/businessOrderShu/view"
-    QUERY_BUSINESS_ORDER_EXPORT_1: str = "/manage/businessOrder/exportToExcelByOrder"
-    QUERY_BUSINESS_ORDER_EXPORT_2: str = "/manage/businessOrder/exportToExcelByProduct"
-    QUERY_BUSINESS_ORDER_EXPORT_3: str = "/manage/businessOrder/exportToExcelByOrderAndProduct"
-    QUERY_WORK_ORDER_WITH_PAGINATOR: str = "/old/orderAction!viewList.action"
-    QUERY_WORK_ORDER_DETAIL: str = "/old/orderAction!view.action"
-    QUERY_WORK_ORDER_EXPORT: str = "/manage/order/work/export"
-    QUERY_PARKING_AUTH_WITH_PAGINATOR: str = "/manage/carParkApplication/carParkCard/list"
-    QUERY_PARKING_AUTH_DETAIL: str = "/manage/carParkApplication/carParkCard"
-    UPDATE_PARKING_AUTH: str = "/manage/carParkApplication/carParkCard"
-    QUERY_PARKING_AUTH_AUDIT_WITH_PAGINATOR: str = "/manage/carParkApplication/carParkCard/parkingCardManagerByAudit"
-    QUERY_PARKING_AUTH_AUDIT_CHECK_WITH_PAGINATOR: str = "/manage/carParkApplication/getParkingCheckList"
-    UPDATE_PARKING_AUTH_AUDIT_STATUS: str = "/manage/carParkApplication/completeTask"
-    QUERY_EXPORT_WITH_PAGINATOR: str = "/manage/export/log"
-    UPLOAD: str = "/upload"
+class RequestUrl:
+    BASE_URL: str = "https://sq.wisharetec.com/"
+    LOGIN_URL: str = "/manage/login"
+    QUERY_LOGIN_STATE_URL: str = "/old/serverUserAction!checkSession.action"
+    QUERY_COMMUNITY_WITH_PAGINATOR_URL: str = "/manage/communityInfo/getAdminCommunityList"
+    QUERY_COMMUNITY_DETAIL_URL: str = "/manage/communityInfo/getCommunityInfo"
+    QUERY_ROOM_WITH_PAGINATOR_URL: str = "/manage/communityRoom/listCommunityRoom"
+    QUERY_ROOM_DETAIL_URL: str = "/manage/communityRoom/getFullRoomInfo"
+    QUERY_ROOM_EXPORT_URL: str = "/manage/communityRoom/exportDelayCommunityRoomList"
+    QUERY_REGISTER_USER_WITH_PAGINATOR_URL: str = "/manage/user/register/list"
+    QUERY_REGISTER_USER_DETAIL_URL: str = "/manage/user/register/detail"
+    QUERY_REGISTER_USER_EXPORT_URL: str = "/manage/user/register/list/export"
+    QUERY_REGISTER_OWNER_WITH_PAGINATOR_URL: str = "/manage/user/information/register/list"
+    QUERY_REGISTER_OWNER_DETAIL_URL: str = "/manage/user/information/register/detail"
+    QUERY_REGISTER_OWNER_EXPORT_URL: str = "/manage/user/information/register/list/export"
+    QUERY_UNREGISTER_OWNER_WITH_PAGINATOR_URL: str = "/manage/user/information/unregister/list"
+    QUERY_UNREGISTER_OWNER_DETAIL_URL: str = "/manage/user/information/unregister/detail"
+    QUERY_UNREGISTER_OWNER_EXPORT_URL: str = "/manage/user/information/unregister/list/export"
+    QUERY_SHOP_GOODS_CATEGORY_WITH_PAGINATOR_URL: str = "/manage/productCategory/getProductCategoryList"
+    QUERY_SHOP_GOODS_WITH_PAGINATOR_URL: str = "/manage/shopGoods/getAdminShopGoods"
+    QUERY_SHOP_GOODS_DETAIL_URL: str = "/manage/shopGoods/getShopGoodsDetail"
+    SAVE_SHOP_GOODS_URL: str = "/manage/shopGoods/saveSysShopGoods"
+    UPDATE_SHOP_GOODS_URL: str = "/manage/shopGoods/updateShopGoods"
+    QUERY_SHOP_GOODS_PUSH_TO_STORE_URL: str = "/manage/shopGoods/getGoodsStoreEdits"
+    SAVE_SHOP_GOODS_PUSH_TO_STORE_URL: str = "/manage/shopGoods/saveGoodsStoreEdits"
+    QUERY_STORE_PRODUCT_WITH_PAGINATOR_URL: str = "/manage/storeProduct/getAdminStoreProductList"
+    QUERY_STORE_PRODUCT_DETAIL_URL: str = "/manage/storeProduct/getStoreProductInfo"
+    UPDATE_STORE_PRODUCT_URL: str = "/manage/storeProduct/updateStoreProductInfo"
+    UPDATE_STORE_PRODUCT_STATUS_URL: str = "/manage/storeProduct/updateProductStatus"
+    QUERY_BUSINESS_ORDER_WITH_PAGINATOR_URL: str = "/manage/businessOrderShu/list"
+    QUERY_BUSINESS_ORDER_DETAIL_URL: str = "/manage/businessOrderShu/view"
+    QUERY_BUSINESS_ORDER_EXPORT_1_URL: str = "/manage/businessOrder/exportToExcelByOrder"
+    QUERY_BUSINESS_ORDER_EXPORT_2_URL: str = "/manage/businessOrder/exportToExcelByProduct"
+    QUERY_BUSINESS_ORDER_EXPORT_3_URL: str = "/manage/businessOrder/exportToExcelByOrderAndProduct"
+    QUERY_WORK_ORDER_WITH_PAGINATOR_URL: str = "/old/orderAction!viewList.action"
+    QUERY_WORK_ORDER_DETAIL_URL: str = "/old/orderAction!view.action"
+    QUERY_WORK_ORDER_EXPORT_URL: str = "/manage/order/work/export"
+    QUERY_PARKING_AUTH_WITH_PAGINATOR_URL: str = "/manage/carParkApplication/carParkCard/list"
+    QUERY_PARKING_AUTH_DETAIL_URL: str = "/manage/carParkApplication/carParkCard"
+    UPDATE_PARKING_AUTH_URL: str = "/manage/carParkApplication/carParkCard"
+    QUERY_PARKING_AUTH_AUDIT_WITH_PAGINATOR_URL: str = "/manage/carParkApplication/carParkCard/parkingCardManagerByAudit"
+    QUERY_PARKING_AUTH_AUDIT_CHECK_WITH_PAGINATOR_URL: str = "/manage/carParkApplication/getParkingCheckList"
+    UPDATE_PARKING_AUTH_AUDIT_STATUS_URL: str = "/manage/carParkApplication/completeTask"
+    QUERY_EXPORT_WITH_PAGINATOR_URL: str = "/manage/export/log"
+    UPLOAD_URL: str = "/upload"
+
+
+class ValidatorJsonSchema:
+    """
+    json schema settings
+    """
+    NORMAL_SCHEMA = {
+        "type": "object",
+        "properties": {
+            "status": {
+                "oneOf": [
+                    {"type": "integer", "const": 100},
+                    {"type": "string", "const": "100"},
+                ]
+            }
+        },
+        "required": ["status"],
+    }
+
+    LOGIN_SCHEMA = {
+        "type": "object",
+        "properties": {
+            "token": {"type": "string", "minLength": 1},
+            "companyCode": {"type": "string", "minLength": 1},
+        },
+        "required": ["token", "companyCode"],
+    }
+
+
+class ResponseHandler:
+    """
+    response handler
+    """
+
+    @staticmethod
+    def normal_handler(response: Response = None):
+        if isinstance(response, Response) and response.status_code == 200:
+            json_addict = Dict(response.json())
+            if Draft202012Validator(ValidatorJsonSchema.NORMAL_SCHEMA).is_valid(instance=json_addict):
+                return json_addict.get("data", Dict())
+            return None
+        raise Exception(f"Response Handler Error {response.status_code}|{response.text}")
 
 
 class Admin(object):
     def __init__(
             self,
-            base_url: str = "https://sq.wisharetec.com/",
-            username: str = None,
-            password: str = None,
+            base_url: str = RequestUrl.BASE_URL,
+            username: str = "",
+            password: str = "",
             cache: Union[diskcache.Cache, redis.Redis, redis.StrictRedis] = None
     ):
-        base_url = base_url if isinstance(base_url, str) else "https://sq.wisharetec.com/"
-        if base_url.endswith("/"):
-            base_url = base_url[:-1]
-        self.base_url = base_url
-        self.username = username if isinstance(username, str) else ""
-        self.password = password if isinstance(password, str) else ""
-        self.cache = cache if isinstance(cache, (diskcache.Cache, redis.Redis, redis.StrictRedis)) else None
+        self.base_url = base_url[:-1] if isinstance(base_url, str) else base_url
+        self.username = username
+        self.password = password
+        self.cache = cache
         self.token: dict = {}
-
-    def _default_response_handler(self, response: Response = None):
-        """
-        default response handler
-        :param response: requests.Response instance
-        :return:
-        """
-        if isinstance(response, Response) and response.status_code == 200:
-            json_addict = Dict(response.json())
-            if Draft202012Validator({
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "oneOf": [
-                            {"type": "integer", "const": 100},
-                            {"type": "string", "const": "100"},
-                        ]
-                    }
-                },
-                "required": ["status"],
-            }).is_valid(json_addict):
-                return json_addict.data, response
-        return False, response
 
     def query_login_state(
             self,
-            method: str = "GET",
-            url: str = UrlSettings.QUERY_LOGIN_STATE,
             **kwargs
     ):
-        method = method if isinstance(method, str) else "GET"
-        url = url if isinstance(url, str) else UrlSettings.QUERY_LOGIN_STATE
-        if not url.startswith("http"):
-            if not url.startswith("/"):
-                url = f"/{url}"
-            url = f"{self.base_url}{url}"
-        headers = kwargs.get("headers", {})
-        headers.setdefault("Token", self.token.get("token"))
-        headers.setdefault("Companycode", self.token.get("companyCode"))
-        kwargs["headers"] = headers
-        response = requests.request(method, url, **kwargs)
-        if isinstance(response, Response) and response.status_code == 200:
-            return response.text.strip() == "null", response
-        return False, response
+        kwargs = Dict(kwargs)
+        kwargs.setdefault("method", "POST")
+        kwargs.setdefault(
+            "response_handler",
+            lambda x: isinstance(x, Response) and x.status_code == 200 and x.text.strip() == "null"
+        )
+        kwargs.setdefault("url", f"{RequestUrl.QUERY_LOGIN_STATE_URL}")
+        if not kwargs.get("url", "").startswith("http"):
+            kwargs["url"] = self.base_url + kwargs["url"]
+        kwargs.setdefault("headers", Dict({}))
+        kwargs.headers.setdefault("Token", self.token.get("token", ""))
+        kwargs.headers.setdefault("Companycode", self.token.get("companyCode", ""))
+        return py3_requests.request(**kwargs.to_dict())
 
     def login_with_cache(
             self,
             expire: Union[float, int, timedelta] = None,
-            login_kwargs: dict = None,
-            query_login_state_kwargs: dict = None
+            login_kwargs: dict = {},
+            query_login_state_kwargs: dict = {}
     ):
         """
         login with cache
@@ -143,16 +158,13 @@ class Admin(object):
         :param query_login_state_kwargs: self.query_login_state kwargs
         :return:
         """
-        login_kwargs = login_kwargs if isinstance(login_kwargs, dict) else {}
-        query_login_state_kwargs = query_login_state_kwargs if isinstance(query_login_state_kwargs, dict) else {}
         cache_key = f"py3_wisharetec_token_{self.username}"
         if isinstance(self.cache, diskcache.Cache):
             self.token = self.cache.get(cache_key)
         if isinstance(self.cache, (redis.Redis, redis.StrictRedis)):
             self.token = json.loads(self.cache.get(cache_key))
         self.token = self.token if isinstance(self.token, dict) else {}
-        state, _ = self.query_login_state(**query_login_state_kwargs)
-        if not state:
+        if not self.query_login_state(**query_login_state_kwargs):
             self.login(**login_kwargs)
             if isinstance(self.token, dict) and len(self.token.keys()):
                 if isinstance(self.cache, diskcache.Cache):
@@ -172,10 +184,19 @@ class Admin(object):
 
     def login(
             self,
-            method: str = "POST",
-            url: str = UrlSettings.LOGIN,
             **kwargs
     ):
+        kwargs = Dict(kwargs)
+        kwargs.setdefault("method", "POST")
+        kwargs.setdefault("response_handler", ResponseHandler.normal_handler)
+        kwargs.setdefault("url", f"{RequestUrl.LOGIN_URL}")
+        if not kwargs.get("url", "").startswith("http"):
+            kwargs["url"] = self.base_url + kwargs["url"]
+        kwargs.setdefault("data", Dict())
+        kwargs.data.setdefault("username", self.username)
+        kwargs.data.setdefault("password", hashlib.md5(self.password.encode("utf-8")).hexdigest())
+        kwargs.data.setdefault("mode", "PASSWORD")
+        return py3_requests.request(**kwargs.to_dict())
         method = method if isinstance(method, str) else "POST"
         url = url if isinstance(url, str) else UrlSettings.LOGIN
         if not url.startswith("http"):
@@ -189,38 +210,26 @@ class Admin(object):
         kwargs["data"] = data
         response = requests.request(method=method, url=url, **kwargs)
         result, _ = self._default_response_handler(response)
-        if Draft202012Validator({
-            "type": "object",
-            "properties": {
-                "token": {"type": "string", "minLength": 1},
-                "companyCode": {"type": "string", "minLength": 1},
-            },
-            "required": ["token", "companyCode"],
-        }).is_valid(result):
+        if Draft202012Validator(LOGIN_SCHEMA).is_valid(result):
             self.token = result
         return self
 
     def request_with_token(
-            self, method: str = "GET",
-            url: str = None,
+            self,
             **kwargs
     ):
         """
         request with token
-        :param method: requests.request method
-        :param url: requests.request url
         :param kwargs: requests.request kwargs
         :return:
         """
-        method = method if isinstance(method, str) else "GET"
-        url = url if isinstance(url, str) else ""
-        if not url.startswith("http"):
-            if not url.startswith("/"):
-                url = f"/{url}"
-            url = f"{self.base_url}{url}"
-        headers = kwargs.get("headers", {})
-        headers.setdefault("Token", self.token.get("token"))
-        headers.setdefault("Companycode", self.token.get("companyCode"))
-        kwargs["headers"] = headers
-        response = requests.request(method, url, **kwargs)
-        return self._default_response_handler(response)
+        kwargs = Dict(kwargs)
+        kwargs.setdefault("method", "GET")
+        kwargs.setdefault("response_handler", ResponseHandler.normal_handler)
+        kwargs.setdefault("url", f"")
+        if not kwargs.get("url", "").startswith("http"):
+            kwargs["url"] = self.base_url + kwargs["url"]
+        kwargs.setdefault("headers", Dict({}))
+        kwargs.headers.setdefault("Token", self.token.get("token", ""))
+        kwargs.headers.setdefault("Companycode", self.token.get("companyCode", ""))
+        return py3_requests.request(**kwargs.to_dict())

@@ -25,7 +25,7 @@ setup(
     author="guolei",
     author_email="174000902@qq.com",
     license="MIT",
-    keywors=["wisharetec", "慧享科技", "绿城", "物业管理", "物管", "智慧社区", "智慧社区全域服务平台"],
+    keywors=["wisharetec", "慧享科技", "绿城", "物业管理", "物管", "智慧社区", "智慧社区全域服务平台","guolei","郭磊"],
     packages=setuptools.find_packages('./'),
     install_requires=[
         "requests",

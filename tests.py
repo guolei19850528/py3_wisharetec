@@ -3,7 +3,7 @@ import unittest
 
 import diskcache
 
-from py3_wisharetec.scaasp.admin import Admin, UrlSettings as AdminUrlSettings
+from py3_wisharetec.scaasp.admin import Admin,RequestUrl
 
 
 class MyTestCase(unittest.TestCase):
@@ -14,6 +14,14 @@ class MyTestCase(unittest.TestCase):
             password="guolei_123",
             cache=cache,
         )
+        print(admin.login_with_cache().request_with_token(
+            method="GET",
+            url=RequestUrl.QUERY_COMMUNITY_WITH_PAGINATOR_URL,
+            params={
+                "curPage": 1,
+                "pageSize": 10,
+            }
+        ))
         self.assertTrue(True, "ok")  # add assertion here
 
 
