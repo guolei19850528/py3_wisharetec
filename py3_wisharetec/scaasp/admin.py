@@ -131,6 +131,11 @@ class Admin(object):
             self,
             **kwargs
     ):
+        """
+        query login state
+        :param kwargs:
+        :return:
+        """
         kwargs = Dict(kwargs)
         kwargs.setdefault("method", "POST")
         kwargs.setdefault(
@@ -186,6 +191,11 @@ class Admin(object):
             self,
             **kwargs
     ):
+        """
+        login
+        :param kwargs:
+        :return:
+        """
         kwargs = Dict(kwargs)
         kwargs.setdefault("method", "POST")
         kwargs.setdefault("response_handler", ResponseHandler.normal_handler)
@@ -196,21 +206,8 @@ class Admin(object):
         kwargs.data.setdefault("username", self.username)
         kwargs.data.setdefault("password", hashlib.md5(self.password.encode("utf-8")).hexdigest())
         kwargs.data.setdefault("mode", "PASSWORD")
-        return py3_requests.request(**kwargs.to_dict())
-        method = method if isinstance(method, str) else "POST"
-        url = url if isinstance(url, str) else UrlSettings.LOGIN
-        if not url.startswith("http"):
-            if not url.startswith("/"):
-                url = f"/{url}"
-            url = f"{self.base_url}{url}"
-        data = kwargs.get("data", {})
-        data.setdefault("username", self.username)
-        data.setdefault("password", hashlib.md5(self.password.encode("utf-8")).hexdigest())
-        data.setdefault("mode", "PASSWORD")
-        kwargs["data"] = data
-        response = requests.request(method=method, url=url, **kwargs)
-        result, _ = self._default_response_handler(response)
-        if Draft202012Validator(LOGIN_SCHEMA).is_valid(result):
+        result = py3_requests.request(**kwargs.to_dict())
+        if Draft202012Validator(ValidatorJsonSchema.LOGIN_SCHEMA).is_valid(result):
             self.token = result
         return self
 
