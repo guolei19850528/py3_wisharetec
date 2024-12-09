@@ -97,6 +97,14 @@ class ValidatorJsonSchema:
         "required": ["token", "companyCode"],
     }
 
+    RESULTLIST_SCHEMA = {
+        'type': 'object',
+        'properties': {
+            "resultList": {"type": "array"},
+        },
+        "required": ["resultList"]
+    }
+
 
 class ResponseHandler:
     """
@@ -112,6 +120,13 @@ class ResponseHandler:
             return None
         raise Exception(f"Response Handler Error {response.status_code}|{response.text}")
 
+    @staticmethod
+    def resultlist_handler(response: Response = None):
+        result = ResponseHandler.normal_handler(response=response)
+        if Draft202012Validator(ValidatorJsonSchema.RESULTLIST_SCHEMA).is_valid(instance=result):
+            return result.get("resultList", [])
+        return []
+
 
 class Admin(object):
     def __init__(
@@ -121,7 +136,7 @@ class Admin(object):
             password: str = "",
             cache: Union[diskcache.Cache, redis.Redis, redis.StrictRedis] = None
     ):
-        self.base_url = base_url[:-1] if isinstance(base_url, str) else base_url
+        self.base_url = base_url[:-1] if isinstance(base_url, str) and base_url.endswith("/") else base_url
         self.username = username
         self.password = password
         self.cache = cache
