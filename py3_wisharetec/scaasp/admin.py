@@ -117,7 +117,7 @@ class ResponseHandler:
             json_addict = Dict(response.json())
             if Draft202012Validator(ValidatorJsonSchema.NORMAL_SCHEMA).is_valid(instance=json_addict):
                 return json_addict.get("data", Dict())
-            return None
+            return Dict()
         raise Exception(f"Response Handler Error {response.status_code}|{response.text}")
 
     @staticmethod
@@ -140,7 +140,7 @@ class Admin(object):
         self.username = username
         self.password = password
         self.cache = cache
-        self.token: dict = {}
+        self.token: dict = Dict({})
 
     def query_login_state(
             self,

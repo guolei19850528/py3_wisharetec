@@ -17,7 +17,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 setup(
     name="py3-wisharetec",
-    version="1.0.3",
+    version="1.0.4",
     description="The Python3 Wisharetec Library Developed By Guolei",
     long_description=long_description,
     long_description_content_type="text/markdown",
