@@ -23,106 +23,117 @@ from jsonschema.validators import Draft202012Validator
 from requests import Response
 from retrying import retry
 
-request_urls = Dict()
-request_urls.base = "https://sq.wisharetec.com/"
-request_urls.login = "/manage/login"
-request_urls.query_login_state = "/old/serverUserAction!checkSession.action"
-request_urls.query_community_with_paginator = "/manage/communityInfo/getAdminCommunityList"
-request_urls.query_community_detail = "/manage/communityInfo/getCommunityInfo"
-request_urls.query_room_with_paginator = "/manage/communityRoom/listCommunityRoom"
-request_urls.query_room_detail = "/manage/communityRoom/getFullRoomInfo"
-request_urls.query_room_export = "/manage/communityRoom/exportDelayCommunityRoomList"
-request_urls.query_register_user_with_paginator = "/manage/user/register/list"
-request_urls.query_register_user_detail = "/manage/user/register/detail"
-request_urls.query_register_user_export = "/manage/user/register/list/export"
-request_urls.query_register_owner_with_paginator = "/manage/user/information/register/list"
-request_urls.query_register_owner_detail = "/manage/user/information/register/detail"
-request_urls.query_register_owner_export = "/manage/user/information/register/list/export"
-request_urls.query_unregister_owner_with_paginator = "/manage/user/information/unregister/list"
-request_urls.query_unregister_owner_detail = "/manage/user/information/unregister/detail"
-request_urls.query_unregister_owner_export = "/manage/user/information/unregister/list/export"
-request_urls.query_shop_goods_category_with_paginator = "/manage/productCategory/getProductCategoryList"
-request_urls.query_shop_goods_with_paginator = "/manage/shopGoods/getAdminShopGoods"
-request_urls.query_shop_goods_detail = "/manage/shopGoods/getShopGoodsDetail"
-request_urls.save_shop_goods = "/manage/shopGoods/saveSysShopGoods"
-request_urls.update_shop_goods = "/manage/shopGoods/updateShopGoods"
-request_urls.query_shop_goods_push_to_store = "/manage/shopGoods/getGoodsStoreEdits"
-request_urls.save_shop_goods_push_to_store = "/manage/shopGoods/saveGoodsStoreEdits"
-request_urls.query_store_product_with_paginator = "/manage/storeProduct/getAdminStoreProductList"
-request_urls.query_store_product_detail = "/manage/storeProduct/getStoreProductInfo"
-request_urls.update_store_product = "/manage/storeProduct/updateStoreProductInfo"
-request_urls.update_store_product_status = "/manage/storeProduct/updateProductStatus"
-request_urls.query_business_order_with_paginator = "/manage/businessOrderShu/list"
-request_urls.query_business_order_detail = "/manage/businessordershu/view"
-request_urls.query_business_order_export_1 = "/manage/businessOrder/exportToExcelByOrder"
-request_urls.query_business_order_export_2 = "/manage/businessOrder/exportToExcelByProduct"
-request_urls.query_business_order_export_3 = "/manage/businessOrder/exportToExcelByOrderAndProduct"
-request_urls.query_work_order_with_paginator = "/old/orderAction!viewList.action"
-request_urls.query_work_order_detail = "/old/orderAction!view.action"
-request_urls.query_work_order_export = "/manage/order/work/export"
-request_urls.query_parking_auth_with_paginator = "/manage/carParkApplication/carParkCard/list"
-request_urls.query_parking_auth_detail = "/manage/carParkApplication/carParkCard"
-request_urls.update_parking_auth = "/manage/carParkApplication/carParkCard"
-request_urls.query_parking_auth_audit_with_paginator = "/manage/carParkApplication/carParkCard/parkingCardManagerByAudit"
-request_urls.query_parking_auth_audit_check_with_paginator = "/manage/carParkApplication/getParkingCheckList"
-request_urls.update_parking_auth_audit_status = "/manage/carParkApplication/completeTask"
-request_urls.query_export_with_paginator = "/manage/export/log"
-request_urls.upload = "/upload"
 
-validator_json_schemas = Dict()
-validator_json_schemas.normal = Dict({
-    "type": "object",
-    "properties": {
-        "status": {
-            "oneOf": [
-                {"type": "integer", "const": 100},
-                {"type": "string", "const": "100"},
-            ]
-        }
-    },
-    "required": ["status"],
-})
-validator_json_schemas.login = Dict({
-    "type": "object",
-    "properties": {
-        "token": {"type": "string", "minLength": 1},
-        "companyCode": {"type": "string", "minLength": 1},
-    },
-    "required": ["token", "companyCode"],
-})
-validator_json_schemas.result_list = Dict({
-    'type': 'object',
-    'properties': {
-        "resultList": {"type": "array"},
-    },
-    "required": ["resultList"]
-})
+class RequestUrl(py3_requests.RequestUrl):
+    BASE = "https://sq.wisharetec.com/"
+    LOGIN = "/manage/login"
+    QUERY_LOGIN_STATE = "/old/serverUserAction!checkSession.action"
+    QUERY_COMMUNITY_WITH_PAGINATOR = "/manage/communityInfo/getAdminCommunityList"
+    QUERY_COMMUNITY_DETAIL = "/manage/communityInfo/getCommunityInfo"
+    QUERY_ROOM_WITH_PAGINATOR = "/manage/communityRoom/listCommunityRoom"
+    QUERY_ROOM_DETAIL = "/manage/communityRoom/getFullRoomInfo"
+    QUERY_ROOM_EXPORT = "/manage/communityRoom/exportDelayCommunityRoomList"
+    QUERY_REGISTER_USER_WITH_PAGINATOR = "/manage/user/register/list"
+    QUERY_REGISTER_USER_DETAIL = "/manage/user/register/detail"
+    QUERY_REGISTER_USER_EXPORT = "/manage/user/register/list/export"
+    QUERY_REGISTER_OWNER_WITH_PAGINATOR = "/manage/user/information/register/list"
+    QUERY_REGISTER_OWNER_DETAIL = "/manage/user/information/register/detail"
+    QUERY_REGISTER_OWNER_EXPORT = "/manage/user/information/register/list/export"
+    QUERY_UNREGISTER_OWNER_WITH_PAGINATOR = "/manage/user/information/unregister/list"
+    QUERY_UNREGISTER_OWNER_DETAIL = "/manage/user/information/unregister/detail"
+    QUERY_UNREGISTER_OWNER_EXPORT = "/manage/user/information/unregister/list/export"
+    QUERY_SHOP_GOODS_CATEGORY_WITH_PAGINATOR = "/manage/productCategory/getProductCategoryList"
+    QUERY_SHOP_GOODS_WITH_PAGINATOR = "/manage/shopGoods/getAdminShopGoods"
+    QUERY_SHOP_GOODS_DETAIL = "/manage/shopGoods/getShopGoodsDetail"
+    SAVE_SHOP_GOODS = "/manage/shopGoods/saveSysShopGoods"
+    UPDATE_SHOP_GOODS = "/manage/shopGoods/updateShopGoods"
+    QUERY_SHOP_GOODS_PUSH_TO_STORE = "/manage/shopGoods/getGoodsStoreEdits"
+    SAVE_SHOP_GOODS_PUSH_TO_STORE = "/manage/shopGoods/saveGoodsStoreEdits"
+    QUERY_STORE_PRODUCT_WITH_PAGINATOR = "/manage/storeProduct/getAdminStoreProductList"
+    QUERY_STORE_PRODUCT_DETAIL = "/manage/storeProduct/getStoreProductInfo"
+    UPDATE_STORE_PRODUCT = "/manage/storeProduct/updateStoreProductInfo"
+    UPDATE_STORE_PRODUCT_STATUS = "/manage/storeProduct/updateProductStatus"
+    QUERY_BUSINESS_ORDER_WITH_PAGINATOR = "/manage/businessOrderShu/list"
+    QUERY_BUSINESS_ORDER_DETAIL = "/manage/businessordershu/view"
+    QUERY_BUSINESS_ORDER_EXPORT_1 = "/manage/businessOrder/exportToExcelByOrder"
+    QUERY_BUSINESS_ORDER_EXPORT_2 = "/manage/businessOrder/exportToExcelByProduct"
+    QUERY_BUSINESS_ORDER_EXPORT_3 = "/manage/businessOrder/exportToExcelByOrderAndProduct"
+    QUERY_WORK_ORDER_WITH_PAGINATOR = "/old/orderAction!viewList.action"
+    QUERY_WORK_ORDER_DETAIL = "/old/orderAction!view.action"
+    QUERY_WORK_ORDER_EXPORT = "/manage/order/work/export"
+    QUERY_PARKING_AUTH_WITH_PAGINATOR = "/manage/carParkApplication/carParkCard/list"
+    QUERY_PARKING_AUTH_DETAIL = "/manage/carParkApplication/carParkCard"
+    UPDATE_PARKING_AUTH = "/manage/carParkApplication/carParkCard"
+    QUERY_PARKING_AUTH_AUDIT_WITH_PAGINATOR = "/manage/carParkApplication/carParkCard/parkingCardManagerByAudit"
+    QUERY_PARKING_AUTH_AUDIT_CHECK_WITH_PAGINATOR = "/manage/carParkApplication/getParkingCheckList"
+    UPDATE_PARKING_AUTH_AUDIT_STATUS = "/manage/carParkApplication/completeTask"
+    QUERY_EXPORT_WITH_PAGINATOR = "/manage/export/log"
+    UPLOAD = "/upload"
 
 
-def normal_response_handler(response: Response = None):
-    if isinstance(response, Response) and response.status_code == 200:
-        json_addict = Dict(response.json())
-        if Draft202012Validator(validator_json_schemas.normal).is_valid(instance=json_addict):
-            return json_addict.get("data", Dict())
-        return Dict()
-    raise Exception(f"Response Handler Error {response.status_code}|{response.text}")
+class ValidatorJsonSchema(py3_requests.ValidatorJsonSchema):
+    SUCCESS = Dict({
+        "type": "object",
+        "properties": {
+            "status": {
+                "oneOf": [
+                    {"type": "integer", "const": 100},
+                    {"type": "string", "const": "100"},
+                ]
+            }
+        },
+        "required": ["status"],
+    })
+
+    LOGIN = Dict({
+        "type": "object",
+        "properties": {
+            "token": {"type": "string", "minLength": 1},
+            "companyCode": {"type": "string", "minLength": 1},
+        },
+        "required": ["token", "companyCode"],
+    })
+
+    RESULTLIST = Dict({
+        'type': 'object',
+        'properties': {
+            "resultList": {"type": "array"},
+        },
+        "required": ["resultList"]
+    })
 
 
-def result_list_response_handler(response: Response = None):
-    result = normal_response_handler(response=response)
-    if Draft202012Validator(validator_json_schemas.resultList).is_valid(instance=result):
-        return result.get("resultList", [])
-    return []
+class ResponseHandler(py3_requests.ResponseHandler):
+    @staticmethod
+    def success(response: Response = None):
+        json_addict = ResponseHandler.status_code_200_json_addict(response=response)
+        if Draft202012Validator(ValidatorJsonSchema.SUCCESS).is_valid(instance=json_addict):
+            return json_addict.get("data", None)
+        return None
+
+    @staticmethod
+    def result_list(response: Response = None):
+        json_addict = ResponseHandler.success(response=response)
+        if Draft202012Validator(ValidatorJsonSchema.RESULTLIST).is_valid(instance=json_addict):
+            return json_addict.get("resultList", [])
+        return []
 
 
 class Admin(object):
     def __init__(
             self,
-            base_url: str = request_urls.base,
+            base_url: str = RequestUrl.BASE,
             username: str = "",
             password: str = "",
             cache: Union[diskcache.Cache, redis.Redis, redis.StrictRedis] = None
     ):
+        """
+        Admin Class
+        :param base_url:
+        :param username:
+        :param password:
+        :param cache:
+        """
         self.base_url = base_url[:-1] if isinstance(base_url, str) and base_url.endswith("/") else base_url
         self.username = username
         self.password = password
@@ -144,7 +155,7 @@ class Admin(object):
             "response_handler",
             lambda x: isinstance(x, Response) and x.status_code == 200 and x.text.strip() == "null"
         )
-        kwargs.setdefault("url", f"{request_urls.query_login_state}")
+        kwargs.setdefault("url", RequestUrl.QUERY_LOGIN_STATE)
         if not kwargs.get("url", "").startswith("http"):
             kwargs["url"] = self.base_url + kwargs["url"]
         kwargs.setdefault("headers", Dict({}))
@@ -171,8 +182,8 @@ class Admin(object):
         if isinstance(self.cache, (redis.Redis, redis.StrictRedis)):
             self.token = json.loads(self.cache.get(cache_key))
         self.token = self.token if isinstance(self.token, dict) else {}
-        if not self.query_login_state(**query_login_state_kwargs):
-            self.login(**login_kwargs)
+        if not self.query_login_state(**Dict(query_login_state_kwargs).to_dict()):
+            self.login(**Dict(login_kwargs).to_dict())
             if isinstance(self.token, dict) and len(self.token.keys()):
                 if isinstance(self.cache, diskcache.Cache):
                     self.cache.set(
@@ -200,8 +211,8 @@ class Admin(object):
         """
         kwargs = Dict(kwargs)
         kwargs.setdefault("method", "POST")
-        kwargs.setdefault("response_handler", normal_response_handler)
-        kwargs.setdefault("url", request_urls.login)
+        kwargs.setdefault("response_handler", ResponseHandler.success)
+        kwargs.setdefault("url", RequestUrl.LOGIN)
         if not kwargs.get("url", "").startswith("http"):
             kwargs["url"] = self.base_url + kwargs["url"]
         kwargs.setdefault("data", Dict())
@@ -209,7 +220,7 @@ class Admin(object):
         kwargs.data.setdefault("password", hashlib.md5(self.password.encode("utf-8")).hexdigest())
         kwargs.data.setdefault("mode", "PASSWORD")
         result = py3_requests.request(**kwargs.to_dict())
-        if Draft202012Validator(validator_json_schemas.login).is_valid(result):
+        if Draft202012Validator(ValidatorJsonSchema.LOGIN).is_valid(result):
             self.token = result
         return self
 
@@ -224,7 +235,7 @@ class Admin(object):
         """
         kwargs = Dict(kwargs)
         kwargs.setdefault("method", "GET")
-        kwargs.setdefault("response_handler", normal_response_handler)
+        kwargs.setdefault("response_handler", ResponseHandler.success)
         kwargs.setdefault("url", f"")
         if not kwargs.get("url", "").startswith("http"):
             kwargs["url"] = self.base_url + kwargs["url"]

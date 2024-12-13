@@ -17,7 +17,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 setup(
     name="py3-wisharetec",
-    version="1.1.0",
+    version="1.1.1",
     description="The Python3 Wisharetec Library Developed By Guolei",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -28,7 +28,7 @@ setup(
     keywors=["wisharetec", "慧享科技", "绿城", "物业管理", "物管", "智慧社区", "智慧社区全域服务平台","guolei","郭磊"],
     packages=setuptools.find_packages('./'),
     install_requires=[
-        "requests",
+        "py3-requests",
         "addict",
         "retrying",
         "jsonschema",
