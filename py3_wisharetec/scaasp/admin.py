@@ -138,7 +138,7 @@ class Admin(object):
         self.username = username
         self.password = password
         self.cache = cache
-        self.token: dict = Dict({})
+        self.token: dict = Dict()
 
     def query_login_state(
             self,
@@ -150,7 +150,7 @@ class Admin(object):
         :return:
         """
         kwargs = Dict(kwargs)
-        kwargs.setdefault("method", "POST")
+        kwargs.setdefault("method", py3_requests.RequestMethod.POST)
         kwargs.setdefault(
             "response_handler",
             lambda x: isinstance(x, Response) and x.status_code == 200 and x.text.strip() == "null"
@@ -158,7 +158,7 @@ class Admin(object):
         kwargs.setdefault("url", RequestUrl.QUERY_LOGIN_STATE)
         if not kwargs.get("url", "").startswith("http"):
             kwargs["url"] = self.base_url + kwargs["url"]
-        kwargs.setdefault("headers", Dict({}))
+        kwargs.setdefault("headers", Dict())
         kwargs.headers.setdefault("Token", self.token.get("token", ""))
         kwargs.headers.setdefault("Companycode", self.token.get("companyCode", ""))
         return py3_requests.request(**kwargs.to_dict())
@@ -210,7 +210,7 @@ class Admin(object):
         :return:
         """
         kwargs = Dict(kwargs)
-        kwargs.setdefault("method", "POST")
+        kwargs.setdefault("method", py3_requests.RequestMethod.POST)
         kwargs.setdefault("response_handler", ResponseHandler.success)
         kwargs.setdefault("url", RequestUrl.LOGIN)
         if not kwargs.get("url", "").startswith("http"):
@@ -234,12 +234,12 @@ class Admin(object):
         :return:
         """
         kwargs = Dict(kwargs)
-        kwargs.setdefault("method", "GET")
+        kwargs.setdefault("method", py3_requests.RequestMethod.GET)
         kwargs.setdefault("response_handler", ResponseHandler.success)
-        kwargs.setdefault("url", f"")
+        kwargs.setdefault("url", "")
         if not kwargs.get("url", "").startswith("http"):
             kwargs["url"] = self.base_url + kwargs["url"]
-        kwargs.setdefault("headers", Dict({}))
+        kwargs.setdefault("headers", Dict())
         kwargs.headers.setdefault("Token", self.token.get("token", ""))
         kwargs.headers.setdefault("Companycode", self.token.get("companyCode", ""))
         return py3_requests.request(**kwargs.to_dict())
