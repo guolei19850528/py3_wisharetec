@@ -1,0 +1,8 @@
+py3-requests
+addict
+retrying
+jsonschema
+diskcache
+redis
+setuptools
+wheel
