@@ -69,7 +69,7 @@ class RequestUrl(py3_requests.RequestUrl):
     UPDATE_PARKING_AUTH_AUDIT_STATUS = "/manage/carParkApplication/completeTask"
     QUERY_EXPORT_WITH_PAGINATOR = "/manage/export/log"
     UPLOAD = "/upload"
-    QUERY_SURVEY_LIST_WITH_PAGINATOR="/manage/questionnaire/list/managen"
+    QUERY_SURVEY_LIST_WITH_PAGINATOR="/manage/questionnaire/list/managent"
     QUERY_SURVEY_PARTICIPATION_LIST_WITH_PAGINATOR="/manage/questionnaire/joinuser/list"
 
 
